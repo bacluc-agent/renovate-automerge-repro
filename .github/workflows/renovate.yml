@@ -29,7 +29,7 @@ jobs:
       - name: Set up pnpm and Node.js
         uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b
         with:
-          version: 11.27.0
+          version: 11.27.1
           runtime: node@24.21.0
           working-directory: renovate
           install: false
