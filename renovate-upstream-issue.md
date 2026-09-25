@@ -205,9 +205,9 @@ Concretely, in the `existingPr?.state === 'merged'` branch of `lib/workers/repos
 
 A reference implementation with end-to-end proof exists in a fork (5 files, a strict deletion of the suppression that **keeps** the historical lookup, the `Matching PR #N was merged previously` debug log, and the closed-but-unmerged early return; the now-dead `automergedPreviously` field and its body text are dropped):
 
-- https://github.com/bacluc-agent/renovate/pull/1 — branch `issue-269-automerge-revert`, head `faa1f5754b523fed629c6005b421104590b1c2ae`
-  - RED commit `474ed48532eba6784e4f0134b61d0d70f6982448`, fix commit `cda37f5a4ebfbdcfa0c7657866e6ff9f4c82b934`, spec commit `faa1f5754b523fed629c6005b421104590b1c2ae`
-  - `pnpm vitest run lib/workers/repository/update/branch` → `Test Files 25 passed (25)`, `Tests 616 passed (616)`
+- https://github.com/bacluc-agent/renovate/pull/1 — branch `issue-269-automerge-revert`, head `1b3ea61858d4f1777435876ba7caed76c5c18114`
+  - RED commit `474ed48532eba6784e4f0134b61d0d70f6982448`, fix commit `cda37f5a4ebfbdcfa0c7657866e6ff9f4c82b934`, spec commit `faa1f5754b523fed629c6005b421104590b1c2ae`, restore commit `1b3ea61858d4f1777435876ba7caed76c5c18114`
+  - `pnpm vitest run lib/workers/repository/update/branch` → `Test Files 25 passed (25)`, `Tests 617 passed (617)`
   - E2E proof: run `36127828176` above, PR #5 automerged with `🚦 **Automerge**: Enabled.`
 
 Alternatives if some protection must be kept:
