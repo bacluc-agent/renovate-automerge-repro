@@ -29,7 +29,7 @@ Repository: **https://github.com/bacluc-agent/renovate-automerge-repro** (public
 Configuration:
 
 - `renovate.json` — `packageRules` with `"automerge": true` for `patch`/`minor`, `"platformAutomerge": true`, `"automergeStrategy": "squash"`, `"prHourlyLimit": 10`, `dependencyDashboard: false`, `ignorePaths: [".github/workflows/renovate.yml"]`. No `recreateWhen` is set, so the documented default `auto` applies — the mitigation must not be used to hide the bug.
-- `package.json` — a single pinned dependency, `ms` `2.1.2`.
+- `package.json` — a single pinned dependency, `ms` `2.1.2` (after the sequence below, `main` is back at `ms` `2.1.3`).
 - `.github/workflows/renovate.yml` — `workflow_dispatch` with a required input `renovate_ref` (branch/tag/SHA of the Renovate build to run) plus a nightly `schedule`; it checks out the Renovate source, runs `pnpm install && pnpm build`, then `node lib/renovate.ts` with `LOG_LEVEL: debug`.
 - `.github/workflows/validate.yml` — required `validate` check on PRs (so native automerge has a status check to wait for).
 
@@ -103,7 +103,7 @@ Renovate step: https://github.com/bacluc-agent/renovate-automerge-repro/actions/
 All references are against base revision `94728b88c9be875a00f0f9b28d27729ba312b2b9`.
 
 1. `lib/workers/repository/update/branch/check-existing.ts` — `prAlreadyExisted()`
-   https://github.com/renovatebot/renovate/blob/94728b88c9be875a00f0f9b28d27729ba312b2b9/lib/workers/repository/update/branch/check-existing.ts#L8-L50
+   https://github.com/renovatebot/renovate/blob/94728b88c9be875a00f0f9b28d27729ba312b2b9/lib/workers/repository/update/branch/check-existing.ts#L8-L54
    - Returns `null` immediately when `config.recreateClosed` is set (`recreateClosed is true. No need to check for closed PR.`).
    - Otherwise calls `platform.findPr({ branchName, prTitle, state: '!open', targetBranch })`, so **any** previously merged PR on the same branch/title matches, regardless of whether its change is still present on the base branch.
 
@@ -143,14 +143,14 @@ All references are against base revision `94728b88c9be875a00f0f9b28d27729ba312b2
    https://github.com/renovatebot/renovate/blob/94728b88c9be875a00f0f9b28d27729ba312b2b9/lib/workers/types.ts#L162-L166
 
 5. `lib/workers/repository/updates/generate.ts` (line ~222) — the `recreateClosed` / `recreateWhen` short-circuit
-   https://github.com/renovatebot/renovate/blob/94728b88c9be875a00f0f9b28d27729ba312b2b9/lib/workers/repository/updates/generate.ts#L197-L247
+   https://github.com/renovatebot/renovate/blob/94728b88c9be875a00f0f9b28d27729ba312b2b9/lib/workers/repository/updates/generate.ts#L222
    `upg.recreateClosed = upg.recreateWhen === 'always';` — this is what makes the config-only mitigation below work.
 
 ---
 
 ### 4. Config-only mitigation: `recreateWhen: "always"` (not a real fix)
 
-Documented at https://github.com/renovatebot/renovate/blob/94728b88c9be875a00f0f9b28d27729ba312b2b9/docs/usage/configuration-options.md (`recreateWhen`).
+Documented at https://github.com/renovatebot/renovate/blob/94728b88c9be875a00f0f9b28d27729ba312b2b9/docs/usage/configuration-options.md#L4688 (`recreateWhen`).
 
 ```json
 { "recreateWhen": "always" }
@@ -203,7 +203,7 @@ Concretely, in the `existingPr?.state === 'merged'` branch of `lib/workers/repos
 - *previously merged change still present on the base branch* → keep the current anti-loop behavior (automerge off);
 - *base branch no longer contains it (reverted/rolled back, dependency back at `currentValue`)* → leave `config.automerge` untouched so `platformAutomerge` proceeds exactly as in the first run.
 
-A reference implementation with end-to-end proof exists in a fork (6 files, a strict deletion of the suppression that **keeps** the historical lookup, the `Matching PR #N was merged previously` debug log, and the closed-but-unmerged early return; the now-dead `automergedPreviously` field and its body text are dropped):
+A reference implementation with end-to-end proof exists in a fork (6 files, a strict deletion of the suppression that **keeps** the historical lookup, the `Matching PR #N was merged previously` debug log, and the closed-but-unmerged early return; the now-dead `automergedPreviously` field and its body text are dropped). It shows the mechanism, not a final patch shape — the option is expected to be opt-in, i.e. behind a config flag (last bullet below):
 
 - https://github.com/bacluc-agent/renovate/pull/1 — branch `issue-269-automerge-revert`, head `1b3ea61858d4f1777435876ba7caed76c5c18114`
   - RED commit `474ed48532eba6784e4f0134b61d0d70f6982448`, fix commit `cda37f5a4ebfbdcfa0c7657866e6ff9f4c82b934`, spec commit `faa1f5754b523fed629c6005b421104590b1c2ae`, restore commit `1b3ea61858d4f1777435876ba7caed76c5c18114`
