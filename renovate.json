@@ -5,6 +5,7 @@
   "prHourlyLimit": 10,
   "platformAutomerge": true,
   "automergeStrategy": "squash",
+  "automergeAfterPreviousMerge": true,
   "packageRules": [
     {
       "matchUpdateTypes": ["patch", "minor"],
