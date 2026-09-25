@@ -203,7 +203,7 @@ Concretely, in the `existingPr?.state === 'merged'` branch of `lib/workers/repos
 - *previously merged change still present on the base branch* → keep the current anti-loop behavior (automerge off);
 - *base branch no longer contains it (reverted/rolled back, dependency back at `currentValue`)* → leave `config.automerge` untouched so `platformAutomerge` proceeds exactly as in the first run.
 
-A reference implementation with end-to-end proof exists in a fork (6 files, a strict deletion of the suppression that **keeps** the historical lookup, the `Matching PR #N was merged previously` debug log, and the closed-but-unmerged early return; the now-dead `automergedPreviously` field and its body text are dropped). It shows the mechanism, not a final patch shape — the option is expected to be opt-in, i.e. behind a config flag (last bullet below):
+A reference implementation with end-to-end proof exists in a fork (6 files, a strict deletion of the suppression that **keeps** the historical lookup, the `Matching PR #N was merged previously` debug log, and the closed-but-unmerged early return; the now-dead `automergedPreviously` field and its body text are dropped). It shows the mechanism, not a final patch shape — the option is expected to be opt-in, i.e. behind a config flag (last bullet under *Alternatives* below):
 
 - https://github.com/bacluc-agent/renovate/pull/1 — branch `issue-269-automerge-revert`, head `1b3ea61858d4f1777435876ba7caed76c5c18114`
   - RED commit `474ed48532eba6784e4f0134b61d0d70f6982448`, fix commit `cda37f5a4ebfbdcfa0c7657866e6ff9f4c82b934`, spec commit `faa1f5754b523fed629c6005b421104590b1c2ae`, restore commit `1b3ea61858d4f1777435876ba7caed76c5c18114`
