@@ -1,6 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "dependencyDashboard": false,
+  "ignorePaths": [".github/workflows/renovate.yml"],
+  "prHourlyLimit": 10,
   "platformAutomerge": true,
   "automergeStrategy": "squash",
   "packageRules": [
