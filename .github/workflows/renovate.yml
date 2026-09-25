@@ -1,0 +1,52 @@
+name: Renovate
+
+on:
+  workflow_dispatch:
+    inputs:
+      renovate_ref:
+        description: Renovate branch, tag, or commit SHA
+        required: true
+        type: string
+        default: main
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out selected Renovate revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: bacluc-agent/renovate
+          ref: ${{ inputs.renovate_ref || 'main' }}
+          path: renovate
+          persist-credentials: false
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b
+        with:
+          version: 11.27.0
+          runtime: node@24.21.0
+          working-directory: renovate
+          install: false
+      - name: Show selected Renovate revision
+        working-directory: renovate
+        run: git rev-parse HEAD
+      - name: Install Renovate dependencies
+        working-directory: renovate
+        run: pnpm install --frozen-lockfile
+      - name: Build Renovate
+        working-directory: renovate
+        run: pnpm build
+      - name: Run Renovate
+        working-directory: renovate
+        env:
+          LOG_LEVEL: debug
+          RENOVATE_PLATFORM: github
+          RENOVATE_REPOSITORIES: bacluc-agent/renovate-automerge-repro
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+        run: node lib/renovate.ts
