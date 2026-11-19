@@ -6,6 +6,6 @@
     "test": "node --test"
   },
   "dependencies": {
-    "ms": "2.1.2"
+    "ms": "2.1.3"
   }
 }
